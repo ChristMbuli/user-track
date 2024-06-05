@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# La directive DirectoryIndex permet de définir les fichiers index par défaut
+DirectoryIndex router.php
+
+# Réécriture d'URL
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ router.php?url=$1 [NC,L]
