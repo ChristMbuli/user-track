@@ -1,61 +1,45 @@
+<?php
+// Connexion à la base de données MySQL
+$mysqli = new mysqli("localhost", "root", "", "user_track");
+
+// Vérifier la connexion
+if ($mysqli->connect_error) {
+    die("Connection failed: " . $mysqli->connect_error);
+}
+
+// Récupérer l'adresse IP du visiteur
+$ip_address = $_SERVER['REMOTE_ADDR'];
+
+// Récupérer la date d'aujourd'hui
+$today_date = date("Y-m-d");
+
+// Insérer ou mettre à jour la visite dans la table visitors
+$insert_visitor_query = "INSERT INTO visitors (ip_address, visit_time) VALUES ('$ip_address', NOW()) 
+                        ON DUPLICATE KEY UPDATE visit_count = visit_count + 1";
+$mysqli->query($insert_visitor_query);
+
+// Récupérer le nombre de visiteurs pour la journée actuelle
+$get_daily_visits_query = "SELECT visit_count FROM visitors WHERE ip_address = '$ip_address' AND DATE(visit_time) = '$today_date'";
+$result = $mysqli->query($get_daily_visits_query);
+$row = $result->fetch_assoc();
+$daily_visits = $row['visit_count'];
+
+// Fermer la connexion à la base de données
+$mysqli->close();
+?>
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrackViz</title>
-    <link rel="shortcut icon" href="./TrackViz.png" class="rounded" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Nombre de Visiteurs</title>
 </head>
 
-<body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-            <div class="flex justify-center mb-8">
-                <img src="./logo.png" alt="Logo" class="w-40 h-30">
-            </div>
-            <h1 class="text-2xl font-semibold text-center text-gray-500 mt-8 mb-6">Nombre Visiteurs :
-                <span id="dailyVisits">Chargement...</span>
-            </h1>
-            <p class="text-sm text-gray-600 text-justify mt-8 mb-6">Plongez dans TrackViz : la solution de suivi des
-                visiteurs par excellence. Suivez les activités de vos visiteurs en temps réel, explorez les données avec
-                VizBoard pour optimiser l'expérience utilisateur. Découvrez TrackViz, la création de <a href="#"
-                    class="underline">Christ
-                    Mbuli</a>.</p>
-
-
-            <p class="text-xs text-gray-600 text-center mt-8">&copy; 2024 <a href="underline">Christ Mbuli</a> , All
-                rights reserved.
-            </p>
-        </div>
-    </div>
-
-    <script>
-    // Fonction pour mettre à jour le nombre de visites
-    function updateDailyVisits() {
-        // Effectuer une requête AJAX pour récupérer le nombre de visites actuel
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    // Mettre à jour le contenu de la balise span avec le nombre de visites
-                    document.getElementById("dailyVisits").textContent = xhr.responseText;
-                } else {
-                    console.error('Erreur lors de la récupération du nombre de visites:', xhr.status);
-                }
-            }
-        };
-        xhr.open("GET", "./api.php", true);
-        xhr.send();
-    }
-
-    // Appeler la fonction pour la première fois
-    updateDailyVisits();
-
-    // Mettre à jour le nombre de visites toutes les 5 secondes
-    setInterval(updateDailyVisits, 5000); // 5000 millisecondes = 5 secondes
-    </script>
+<body>
+    <h1>Date : <?= $today_date ?></h1>
+    <h2>Nombre de Visiteurs Aujourd'hui : <?= $daily_visits ?></h2>
 </body>
 
 </html>
